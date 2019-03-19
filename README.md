@@ -1,0 +1,2 @@
+# libhammingcode
+Hamming code (c)
