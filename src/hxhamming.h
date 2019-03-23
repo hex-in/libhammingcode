@@ -16,8 +16,8 @@
 #define __HXHAMMING_H__
 
 
-#define HEXIN_PRINTF_DEBUG									1
-#define HEXIN_HAMMING_PADDING                       		0x00    // 0x00 or 0x01
+#define HEXIN_PRINTF_DEBUG									0
+#define HEXIN_HAMMING_PADDING                       		0    // 0 or 1
 #define HEXIN_PADDING_ALIGN_BITS							4
 #define HEXIN_MAX_BUFFER_SIZE								128
 
@@ -50,14 +50,25 @@ unsigned int hexinHammingEncode( const unsigned char *code, /* Raw data      */
 									   unsigned char *pbuf,  /* Raw data  		*/
 									   unsigned int  *length /* Raw data size	*/ );
 
-unsigned int bitsTobytes( unsigned char *bits,
-						  unsigned int  size,
-						  unsigned char *bytes,
-						  unsigned char compressbits );
+unsigned int bitsTobytes_align_right( unsigned char *bits,
+						  			  unsigned int  size,
+						  			  unsigned char *bytes,
+						  			  unsigned char compressbits );
+
+unsigned int bitsTobytes_align_left ( unsigned char *bits,
+						  			  unsigned int  size,
+						  			  unsigned char *bytes,
+						  			  unsigned char compressbits );
+
 
 unsigned int bytesTobits( unsigned char *bytes,
 						  unsigned int  size,
 						  unsigned char *bits,
 						  unsigned char decompressbits );
+
+unsigned int uintTobits( unsigned int data, unsigned int bitsize, unsigned char *bits );
+unsigned int bitsTouint( unsigned char *bits, unsigned int bitsize );
+
+unsigned int hexinGrayCode( unsigned int nbits, unsigned char *pbuf );
 
 #endif /* __HXHAMMING_H__ */

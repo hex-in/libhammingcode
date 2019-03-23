@@ -1,7 +1,7 @@
 /*****************************************************************************************************************
  * Copyright (c) 2018-2019, Hexin (Dalian) Technology Co. Ltd All rights reserved.
  * Author  : Heyn
- * Version : V0.2
+ * Version : V0.3
  * 
  * LICENSING TERMS:
  * -----------------
@@ -9,6 +9,7 @@
  * HISTORIC VERSION:
  * -----------------
  *          New Create at   2019/03/21 V0.2   [Heyn] Initialization.
+ * 							2019/03/23 V0.3   [Heyn] New add uintTobits\bitsTouint\hexinGrayCode.
  * 
 *****************************************************************************************************************/
 
@@ -96,7 +97,7 @@ unsigned int hexinHammingEncode( const unsigned char *code, /* Raw data */
     unsigned int  i = 0, j = 0, k = 0;
     unsigned int  paritybit = 0, totalbits = 0, position = 0;
 
-	if ( (NULL == code) || ( 0 == size) ||  (NULL == pbuf) ) {
+	if ( (NULL == code) || (0 == size) || (NULL == pbuf) ) {
 		return totalbits;
 	}
 
@@ -124,7 +125,7 @@ unsigned int hexinHammingEncode( const unsigned char *code, /* Raw data */
 		printf( "%d", ptr[i] );
 	}
 	printf("\r\n");
-	printf( ">>> [ Hamming Code ]: length = %d (bits)\r\n", totalbits );
+	printf( ">>> [ Hamming Code ]: length = %3d (bits)\r\n", totalbits );
 #endif
 
     return totalbits;
@@ -149,7 +150,7 @@ static unsigned int __hexinHammingChecked ( const unsigned char *code, /* Hammin
     unsigned int  i = 0, j = 0;
     unsigned int  paritybit = 0, totalbits = 0, errorbit = 0, position = 0;
 
-	if ( (NULL == code) || ( 0 == size) ||  (NULL == pbuf) ) {
+	if ( (NULL == code) || (0 == size) || (NULL == pbuf) ) {
 		return totalbits;
 	}
 
@@ -162,7 +163,7 @@ static unsigned int __hexinHammingChecked ( const unsigned char *code, /* Hammin
 		printf( "%d", code[i] );
 	}
 	printf("\r\n");
-	printf( ">>> [ Hamming Code ]: length = %d (bits)\r\n", totalbits );
+	printf( ">>> [ Hamming Code ]: length = %3d (bits)\r\n", totalbits );
 #endif
 
     for ( i=0; i<paritybit; i++ ) {
@@ -205,7 +206,7 @@ int hexinHammingDecode( const unsigned char *code,  /* Hamming code.  	*/
 	unsigned char buffer[HEXIN_MAX_BUFFER_SIZE] = { 0x00 };
     unsigned int  databits = 0, totalbits = size, errorbit = 0;
 
-	if ( (NULL == code) || ( 0 == size) ||  (NULL == pbuf) || (NULL == length) ) {
+	if ( (NULL == code) || (0 == size) || (NULL == pbuf) || (NULL == length) ) {
 		return -1;
 	}
 	if ( (totalbits > HEXIN_MAX_BUFFER_SIZE) ) {
@@ -234,7 +235,7 @@ int hexinHammingDecode( const unsigned char *code,  /* Hamming code.  	*/
 		printf( "%d", ptr[i] );
 	}
 	printf("\r\n");
-	printf( ">>> [   Raw   Code ]: length = %d (bits)\r\n", databits );
+	printf( ">>> [   Raw   Code ]: length = %3d (bits)\r\n", databits );
 #endif
 
     return errorbit;
@@ -260,7 +261,7 @@ static unsigned int __hexinHammingPadding( unsigned char *bits, unsigned int bsi
 	unsigned int offset = ( bsize % HEXIN_PADDING_ALIGN_BITS == 0 ? \
 						  0 : ( HEXIN_PADDING_ALIGN_BITS - bsize%HEXIN_PADDING_ALIGN_BITS ) );
 
-	if ( (NULL == bits) || (0 == bsize) || ( NULL == pbuf) || (0 == psize) || (psize < (bsize + offset)) ) {
+	if ( (NULL == bits) || (0 == bsize) || (NULL == pbuf) || (0 == psize) || (psize < (bsize + offset)) ) {
 		return 0;
 	}
 
@@ -276,7 +277,7 @@ static unsigned int __hexinHammingPadding( unsigned char *bits, unsigned int bsi
 }
 
 /*
- * @brief Bits to bytes.
+ * @brief Bits to bytes (Alignment for right.).
  * @param [IN]  bits  : Array of bits.
  * 		  [IN]  size  : Array of bits size
  *		  [OUT] bytes : Compressed (compressbits) bits to bytes.
@@ -286,24 +287,84 @@ static unsigned int __hexinHammingPadding( unsigned char *bits, unsigned int bsi
  * @Note The size must be greater than a multiple of 8 of the actual size.
  */
 
-unsigned int bitsTobytes( unsigned char *bits,
-						  unsigned int  size,
-						  unsigned char *bytes,
-						  unsigned char compressbits )
+unsigned int bitsTobytes_align_right( unsigned char *bits,
+									  unsigned int  size,
+									  unsigned char *bytes,
+									  unsigned char compressbits )
 {
-    unsigned int  i = 0, j = 0, k = 0, length = 0;
+    int  i = 0, j = 0;
+	unsigned int  length = 0;
 	unsigned char *ptr = bytes;
-	// unsigned char buffer[HEXIN_MAX_BUFFER_SIZE] = { 0x00 };
 
-	if ( (NULL == bits) || ( 0 == size) ||  (NULL == bytes) ) {
+	if ( (NULL == bits) || (0 == size) || (NULL == bytes) ) {
 		return length;
 	}
 
-	// length = __hexinHammingPadding( bits, size, buffer, HEXIN_MAX_BUFFER_SIZE );
+    length = ( size%compressbits == 0 ? size/compressbits : size/compressbits + 1 );
+	ptr    = ( bytes + length - 1);
+	for ( i=(size - 1); i>compressbits; i = (i - compressbits) ) {
+		*ptr = 0x00;
+		for ( j=0; j<compressbits; j++ ) {
+			*ptr |= bits[i-j] << j;
+		}
+		ptr--;
+	}
+	*ptr = 0x00;
+	for ( j=0; j<compressbits; j++, i-- ) {
+		if ( i < 0 ) {
+			*ptr |= HEXIN_HAMMING_PADDING << j;
+		} else {
+			*ptr |= bits[i] << j;
+		}
+	}
+	ptr--;
+
+#if HEXIN_PRINTF_DEBUG
+	printf( ">>> [ CompressByte ]: " );
+	for ( i=0; i<length; i++ ) {
+		printf( "%02X ", bytes[i] );
+	}
+	printf("\r\n");
+	printf( ">>> [ CompressByte ]: length = %3d (bytes)\r\n", length );
+#endif
+
+	return length;
+}
+
+
+/*
+ * @brief Bits to bytes (Alignment for left.).
+ * @param [IN]  bits  : Array of bits.
+ * 		  [IN]  size  : Array of bits size
+ *		  [OUT] bytes : Compressed (compressbits) bits to bytes.
+ *		  [IN]  compressbits : 2 <= compressbits <= 8
+ *
+ * @retval Array of bytes size.
+ * @Note The size must be greater than a multiple of 8 of the actual size.
+ */
+
+unsigned int bitsTobytes_align_left( unsigned char *bits,
+									 unsigned int  size,
+									 unsigned char *bytes,
+									 unsigned char compressbits )
+{
+    int  i = 0, j = 0;
+	unsigned int  length = 0;
+	unsigned char *ptr = bytes;
+
+	if ( (NULL == bits) || (0 == size) || (NULL == bytes) ) {
+		return length;
+	}
+
     length = ( size%compressbits == 0 ? size/compressbits : size/compressbits + 1 );
 	for ( i=0; i<length; i++ ) {
+		*ptr = 0x00;
 		for ( j=0; j<compressbits; j++ ) {
-			*ptr |= bits[(compressbits*i)+j] << (compressbits-1-j);
+			if ( (compressbits*i)+j >= size ) {
+				*ptr |= HEXIN_HAMMING_PADDING << (compressbits-1-j);
+			} else {
+				*ptr |= bits[(compressbits*i)+j] << (compressbits-1-j);
+			}
 		}		
 		ptr++;
 	}
@@ -314,24 +375,8 @@ unsigned int bitsTobytes( unsigned char *bits,
 		printf( "%02X ", bytes[i] );
 	}
 	printf("\r\n");
-	printf( ">>> [ CompressByte ]: length = %d (bits)\r\n", length );
+	printf( ">>> [ CompressByte ]: length = %3d (bytes)\r\n", length );
 #endif
-
-// 	if ( length*compressbits != size ) {
-// 		for ( k=length-1; k>0; k-- ) {
-// 			bytes[k] = (bytes[k] >> HEXIN_PADDING_ALIGN_BITS) | (bytes[k-1]<<HEXIN_PADDING_ALIGN_BITS);
-// 		}
-// 		bytes[0] = (bytes[0] >> HEXIN_PADDING_ALIGN_BITS) & 0x0F;
-// 	}
-
-// #if HEXIN_PRINTF_DEBUG
-// 	printf( ">>> [ CompressByte ]: " );
-// 	for ( i=0; i<length; i++ ) {
-// 		printf( "%02X ", bytes[i] );
-// 	}
-// 	printf("\r\n");
-// 	printf( ">>> [ CompressByte ]: length = %d (bits)\r\n", length );
-// #endif
 
 	return length;
 }
@@ -357,7 +402,7 @@ unsigned int bytesTobits( unsigned char *bytes,	/* Array of bytes 		*/
 	unsigned int i = 0, j = 0, length = size*decompressbits;
 	unsigned int mark = (0x01 << (decompressbits - 1));
 
-	if ( (NULL == bits) || ( 0 == size) ||  (NULL == bytes) ) {
+	if ( (NULL == bits) || (0 == size) || (NULL == bytes) ) {
 		return 0;
 	}
 
@@ -373,8 +418,54 @@ unsigned int bytesTobits( unsigned char *bytes,	/* Array of bytes 		*/
 		printf( "%02X ", bits[i] );
 	}
 	printf("\r\n");
-	printf( ">>> [DecompressByte]: length = %d (bits)\r\n", length );
+	printf( ">>> [DecompressByte]: length = %3d (bits)\r\n", length );
 #endif
 
 	return length;
+}
+
+unsigned int uintTobits( unsigned int data, unsigned int bitsize, unsigned char *bits )
+{
+	unsigned int i = 0, length = 0;
+	unsigned char *ptr = bits;
+	unsigned int imax = sizeof(unsigned int)*8;
+	unsigned int mark = ( 0x01 << (imax - 1) );
+
+	if ( (0 == bitsize) || (NULL == bits) ) {
+		return 0;
+	}
+
+	for ( i=( imax - ( bitsize > imax ? imax : bitsize ) ); i<imax; i++ ) {
+		*ptr++ = ( ( data & ( mark >> i ) ) > 0 ? 1 : 0 );
+		length++;
+	}
+
+	return length;		
+}
+
+unsigned int bitsTouint( unsigned char *bits, unsigned int bitsize )
+{
+	unsigned int i = 0, number = 0;
+
+	for ( i=0; i<bitsize; i++ ) {
+		if ( bits[i] == 0x01 ) {
+			number += __hexinPower( 2, bitsize-i-1 );
+		}
+	}
+
+	return number;
+}
+
+unsigned int hexinGrayCode( unsigned int nbits, unsigned char *pbuf )
+{
+	unsigned int i = 0;
+
+	if ( (0 == nbits) || (NULL == pbuf) || (nbits > 8) ) {
+		return 0;
+	}
+
+	for ( i=0; i<( 1 << nbits ); i++){
+		pbuf[i] = ( i^( i>> 1) );
+	}
+	return i;
 }
