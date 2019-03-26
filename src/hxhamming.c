@@ -1,7 +1,7 @@
 /*****************************************************************************************************************
  * Copyright (c) 2018-2019, Hexin (Dalian) Technology Co. Ltd All rights reserved.
  * Author  : Heyn
- * Version : V0.3
+ * Version : V0.4
  * 
  * LICENSING TERMS:
  * -----------------
@@ -10,6 +10,7 @@
  * -----------------
  *          New Create at   2019/03/21 V0.2   [Heyn] Initialization.
  * 							2019/03/23 V0.3   [Heyn] New add uintTobits\bitsTouint\hexinGrayCode.
+ * 							2019/03/26 V0.4   [Heyn] Bugfix: bitsTobytes_align_right(...) 4bytes alignment.
  * 
 *****************************************************************************************************************/
 
@@ -302,13 +303,14 @@ unsigned int bitsTobytes_align_right( unsigned char *bits,
 
     length = ( size%compressbits == 0 ? size/compressbits : size/compressbits + 1 );
 	ptr    = ( bytes + length - 1);
-	for ( i=(size - 1); i>compressbits; i = (i - compressbits) ) {
+	for ( i=(size - 1); i>=compressbits; i = (i - compressbits) ) {		// Bugfix: No.20190326
 		*ptr = 0x00;
 		for ( j=0; j<compressbits; j++ ) {
 			*ptr |= bits[i-j] << j;
 		}
 		ptr--;
 	}
+
 	*ptr = 0x00;
 	for ( j=0; j<compressbits; j++, i-- ) {
 		if ( i < 0 ) {
