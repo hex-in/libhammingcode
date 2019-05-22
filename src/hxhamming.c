@@ -350,7 +350,7 @@ unsigned int bitsTobytes_align_left( unsigned char *bits,
 									 unsigned char *bytes,
 									 unsigned char compressbits )
 {
-    int  i = 0, j = 0;
+    unsigned int  i = 0, j = 0;
 	unsigned int  length = 0;
 	unsigned char *ptr = bytes;
 
@@ -466,7 +466,7 @@ unsigned int hexinGrayCode( unsigned int nbits, unsigned char *pbuf )
 		return 0;
 	}
 
-	for ( i=0; i<( 1 << nbits ); i++){
+	for ( i=0; i<( unsigned int )( 1 << nbits ); i++){
 		pbuf[i] = ( i^( i>> 1) );
 	}
 	return i;
