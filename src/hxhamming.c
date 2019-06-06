@@ -11,6 +11,7 @@
  *          New Create at   2019/03/21 V0.2   [Heyn] Initialization.
  * 							2019/03/23 V0.3   [Heyn] New add uintTobits\bitsTouint\hexinGrayCode.
  * 							2019/03/26 V0.4   [Heyn] Bugfix: bitsTobytes_align_right(...) 4bytes alignment.
+ * 							2019/06/06 V0.5	  [Heyn] Bugfixed190606: when size=17, It's will be loop forever.
  * 
 *****************************************************************************************************************/
 
@@ -65,17 +66,27 @@ static unsigned int __getHammingParityBitSize( unsigned int size )
 
 	while ( size > __hexinPower(2, paritybit) - (paritybit + 1) ) {
 		paritybit++;
+#if HEXIN_PRINTF_DEBUG
+		printf( ">>> [ Parity  Size ]: " );
+		printf( "size=%d, parity size=%d", size, paritybit );
+		printf( "\r\n" );
+#endif
 	}
     return paritybit;
 }
 
 static unsigned int __getHammingDataBitsSize ( unsigned int size )
 {
-	unsigned int databits = 1, paritybit = 0;
+	unsigned int databits = 0, paritybit = 0;
 
-	while ( (databits + paritybit) != size ) {
-		paritybit = __getHammingParityBitSize( databits++ );
-	}
+	// Bugfixed190606: when size=17, It's will be loop forever.
+	// while ( (databits + paritybit) != size ) {
+	// 	paritybit = __getHammingParityBitSize( databits++ );
+	// }
+	do {
+		databits++;
+		paritybit = __getHammingParityBitSize( databits );
+	} while ( (databits + paritybit) != size );
 
 	return databits;
 }
