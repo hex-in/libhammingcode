@@ -1,7 +1,7 @@
 /*****************************************************************************************************************
  * Copyright (c) 2018-2019, Hexin (Dalian) Technology Co. Ltd All rights reserved.
  * Author  : Heyn
- * Version : V0.1
+ * Version : V0.3
  * 
  * LICENSING TERMS:
  * -----------------
@@ -10,7 +10,8 @@
  * -----------------
  *          New Create at   2019/03/21 V0.2   [Heyn] Initialization.
  *                          2019/03/23 V0.3   [Heyn] New add uint2bit\bit2uint\table.
- * 
+ *                          2019/07/08 V0.3   [Heyn] warning: unused variable 'rawbyte' [-Wunused-variable]
+ *
 *****************************************************************************************************************/
 
 #include <Python.h>
@@ -132,7 +133,7 @@ static PyObject * _hamming_byte2bit(PyObject *self, PyObject *args)
     unsigned char compressbits = 4;
     unsigned int  length = 0x00000000L;
     unsigned char rawbits[HEXIN_MAX_BUFFER_SIZE] = { 0x00 };
-    unsigned char rawbyte[HEXIN_MAX_BUFFER_SIZE] = { 0x00 };
+    // unsigned char rawbyte[HEXIN_MAX_BUFFER_SIZE] = { 0x00 };
 
     if ( !PyArg_ParseTuple( args, "y#|b", &data, &length, &compressbits ) ) {
         return NULL;

@@ -12,7 +12,8 @@
  * 							2019/03/23 V0.3   [Heyn] New add uintTobits\bitsTouint\hexinGrayCode.
  * 							2019/03/26 V0.4   [Heyn] Bugfix: bitsTobytes_align_right(...) 4bytes alignment.
  * 							2019/06/06 V0.5	  [Heyn] Bugfixed190606: when size=17, It's will be loop forever.
- * 
+ * 							2019/07/08 V0.5   [Heyn] warning: unused function '__hexinHammingPadding'
+ *
 *****************************************************************************************************************/
 
 /******************************************************************************
@@ -265,28 +266,28 @@ int hexinHammingDecode( const unsigned char *code,  /* Hamming code.  	*/
  * @Note None.
  */
 
-static unsigned int __hexinHammingPadding( unsigned char *bits, unsigned int bsize,
-								  		   unsigned char *pbuf, unsigned int psize )
-{
-	unsigned int i = 0;
-	unsigned char *ptr  = pbuf;
-	unsigned int offset = ( bsize % HEXIN_PADDING_ALIGN_BITS == 0 ? \
-						  0 : ( HEXIN_PADDING_ALIGN_BITS - bsize%HEXIN_PADDING_ALIGN_BITS ) );
+// static unsigned int __hexinHammingPadding( unsigned char *bits, unsigned int bsize,
+// 								  		   unsigned char *pbuf, unsigned int psize )
+// {
+// 	unsigned int i = 0;
+// 	unsigned char *ptr  = pbuf;
+// 	unsigned int offset = ( bsize % HEXIN_PADDING_ALIGN_BITS == 0 ? \
+// 						  0 : ( HEXIN_PADDING_ALIGN_BITS - bsize%HEXIN_PADDING_ALIGN_BITS ) );
 
-	if ( (NULL == bits) || (0 == bsize) || (NULL == pbuf) || (0 == psize) || (psize < (bsize + offset)) ) {
-		return 0;
-	}
+// 	if ( (NULL == bits) || (0 == bsize) || (NULL == pbuf) || (0 == psize) || (psize < (bsize + offset)) ) {
+// 		return 0;
+// 	}
 
-	for ( i=0; i<offset; i++ ) {
-		*ptr++ = HEXIN_HAMMING_PADDING;
-	}
+// 	for ( i=0; i<offset; i++ ) {
+// 		*ptr++ = HEXIN_HAMMING_PADDING;
+// 	}
 
-	for ( i=0; i<bsize; i++ ) {
-		*ptr++ = bits[i];
-	}
+// 	for ( i=0; i<bsize; i++ ) {
+// 		*ptr++ = bits[i];
+// 	}
 
-	return ( bsize + offset );
-}
+// 	return ( bsize + offset );
+// }
 
 /*
  * @brief Bits to bytes (Alignment for right.).
